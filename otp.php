@@ -2,8 +2,6 @@
 
 require_once("base32.php");
 
-
-
 class OTP {
     public function __construct($key, $digits = 6, $digest = 'sha1') {
         $this->key = self::process_key($key);
@@ -26,7 +24,7 @@ class OTP {
     }
 
     public function generate_otp($counter) {
-        $HMAC = hash_hmac("sha1", self::int_to_bytestring($counter), $this->key, true);
+        $HMAC = hash_hmac('sha1', self::int_to_bytestring($counter), $this->key, true);
         $HMACLength = strlen($HMAC);
         $offset = ord($HMAC[$HMACLength - 1]) & 0xF;
         $Snum = (
@@ -38,5 +36,16 @@ class OTP {
         $result = (string)($Snum % pow(10, $this->digits));
         $pad_size = strlen($result) % $this->digits;
         return str_repeat("0", $pad_size) . $result;
+    }
+
+    public static function generate_key() {
+        $FinalSeed = "";
+        $FinalSeed .= self::int_to_bytestring(memory_get_usage(false));
+        $FinalSeed .= self::int_to_bytestring(getrusage()["ru_utime.tv_usec"]);
+        $FinalSeed .= self::int_to_bytestring(memory_get_usage(true));
+        $FinalSeed .= self::int_to_bytestring(time());
+        $FinalSeed .= random_bytes(32);
+
+        return hash('sha3-512', $FinalSeed);
     }
 }
