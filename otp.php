@@ -5,17 +5,17 @@ require_once("base32.php");
 
 
 class OTP {
-    function __construct($key, $digits = 6, $digest = 'sha1') {
+    public function __construct($key, $digits = 6, $digest = 'sha1') {
         $this->key = self::process_key($key);
         $this->digits = $digits;
         $this->digest = $digest;
     }
 
-    static function process_key($key) {
+    public static function process_key($key) {
         return Base32::decode($key);
     }
 
-    static function int_to_bytestring($value) {
+    public static function int_to_bytestring($value) {
         $result = '';
         while($value != 0) {
             $result .= chr($value & 0xFF);
@@ -25,7 +25,7 @@ class OTP {
         return str_repeat("\0", 8 - $pad_size) . strrev($result);
     }
 
-    function generate_otp($counter) {
+    public function generate_otp($counter) {
         $HMAC = hash_hmac("sha1", self::int_to_bytestring($counter), $this->key, true);
         $HMACLength = strlen($HMAC);
         $offset = ord($HMAC[$HMACLength - 1]) & 0xF;
